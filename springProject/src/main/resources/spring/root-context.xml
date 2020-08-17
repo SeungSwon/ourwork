@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	<!-- DataSource 등록
+		: DataSource는 서버 구동 시 동시에 연결이 되어야 함
+		   아래에서 DataSource를 참조할 수 있도록 가장 상단에 작성할 것
+		  destroy-method : 해당 객체가 삭제 되기 전에 실행 되어야 할 기능이 있는 경우 정의하는 속성
+		  => 주어진 세션을 자동으로 close 하라는 의미 -->
+	<!-- BasicDataSource dataSource = new BasicDataSource()
+		 dataSource.setDriverClassName("...");
+		 dataSource.setUrl("...");
+		 위와 같은 코드를 작성하는 것이 아니라 XML 설정 파일에 bean을 등록하여 객체에 대한
+		 설정을 제공하면 spring framework가 구동되며 객체를 생성하고 사용하고 소멸시킴
+		 설정을 등록하는 것 => DI(의존성 주입) -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+	destroy-method="close">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+		<property name="url" value="jdbc:oracle:thin:@localhost:1521:xe"/>
+		<property name="username" value="spring"/>
+		<property name="password" value="spring"/>
+		<property name="defaultAutoCommit" value="false"/>
+	</bean>
+	
+	<!-- 마이바티스 SqlSession 등록하기 -->
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- mybatis-config.xml 설정 불러와서 세팅 -->
+		<property name="configLocation" value="classpath:mybatis-config.xml"/>
+		<property name="dataSource" ref="dataSource"/>
+		<!-- ref=""는 객체를 참조할 때 사용
+			 SqlSessionFactoryBean sqlSession = new SqlSessionFactoryBean();
+			 sqlSession.setDataSource(dataSource); <= 위에 등록한 dataSource 객체를 setter에 전달함 -->
+	</bean>
+	
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="sqlSession"/>
+	</bean>
+</beans>
